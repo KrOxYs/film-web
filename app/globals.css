@@ -95,7 +95,7 @@
 
 /* Hero */
 .hero-bg {
-  @apply absolute top-0 left-0 -z-10 h-screen w-screen;
+  @apply absolute top-0 left-0 -z-10 h-screen w-full;
 }
 
 .hero-bg-image {

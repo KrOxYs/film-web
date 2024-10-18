@@ -13,6 +13,7 @@ const MyList = async () => {
       return movieDetails;
     })
   );
+  console.log("mylist", myList);
 
   return (
     <>

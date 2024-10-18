@@ -2,7 +2,6 @@
 
 import { Genre, Movie, Video } from "@lib/types";
 import { AddCircle, CancelRounded, RemoveCircle } from "@mui/icons-material";
-import { set } from "mongoose";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import Loader from "./Loader";
@@ -19,7 +18,7 @@ interface User {
   favorites: number[];
 }
 
-const Modal = ({ movie, closeModal }: Props) => {
+const Modal: React.FC<Props> = ({ movie, closeModal }) => {
   const router = useRouter();
 
   const [video, setVideo] = useState("");
@@ -50,7 +49,9 @@ const Modal = ({ movie, closeModal }: Props) => {
         const index = data.videos.results.findIndex(
           (video: Video) => video.type === "Trailer"
         );
-        setVideo(data.videos.results[index].key);
+        if (index !== -1) {
+          setVideo(data.videos.results[index].key);
+        }
       }
 
       if (data?.genres) {
@@ -65,14 +66,12 @@ const Modal = ({ movie, closeModal }: Props) => {
     getMovieDetails();
   }, [movie]);
 
-
-  // HANDLE MY LIST
   const getUser = async () => {
     try {
       const res = await fetch(`/api/user/${session?.user?.email}`);
       const data = await res.json();
       setUser(data);
-      setIsFavorite(data.favorites.find((item: number) => item === movie.id));
+      setIsFavorite(data.favorites.includes(movie.id));
       setLoading(false);
     } catch (err) {
       console.log("Error fetching user", err);
@@ -94,67 +93,70 @@ const Modal = ({ movie, closeModal }: Props) => {
       });
       const data = await res.json();
       setUser(data);
-      setIsFavorite(data.favorites.find((item: number) => item === movie.id));
-      router.refresh()
+      setIsFavorite(data.favorites.includes(movie.id));
+      router.refresh();
     } catch (err) {
       console.log("Failed to handle my list", err);
     }
   };
-  
+
   return loading ? (
-    <Loader />
+    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2">
+      <Loader />
+    </div>
   ) : (
-    <div className="modal">
-      <button className="modal-close" onClick={closeModal}>
-        <CancelRounded
-          sx={{ color: "white", fontSize: "35px", ":hover": { color: "red" } }}
-        />
+    <div className="modal bg-white rounded-lg shadow-lg p-4 relative">
+      <button
+        className="absolute top-4 right-4 text-white"
+        onClick={closeModal}
+      >
+        <CancelRounded sx={{ fontSize: "35px", ":hover": { color: "red" } }} />
       </button>
 
       <iframe
         src={`https://www.youtube.com/embed/${video}?autoplay=1&mute=1&loop=1`}
-        className="modal-video"
+        className="modal-video w-full h-64 rounded-lg mb-4"
         loading="lazy"
         allowFullScreen
       />
 
       <div className="modal-content">
-        <div className="flex justify-between">
+        <div className="flex justify-between mb-2">
           <div className="flex gap-2">
-            <p className="text-base-bold">Name:</p>
-            <p className="text-base-light">{movie?.title || movie?.name}</p>
+            <p className="font-semibold">Name:</p>
+            <p className="text-gray-700">{movie?.title || movie?.name}</p>
           </div>
-          <div className="flex gap-3">
-            <p className="text-base-bold">Add To List</p>
+          <div className="flex items-center gap-2">
+            <p className="font-semibold">Add To List:</p>
             {isFavorite ? (
               <RemoveCircle
-                className="cursor-pointer text-pink-1"
+                className="cursor-pointer text-pink-600"
                 onClick={handleMyList}
               />
             ) : (
               <AddCircle
-                className="cursor-pointer text-pink-1"
+                className="cursor-pointer text-pink-600"
                 onClick={handleMyList}
               />
             )}
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <p className="text-base-bold">Release Date:</p>
-          <p className="text-base-light">{movie?.release_date}</p>
+        <div className="flex gap-2 mb-2">
+          <p className="font-semibold">Release Date:</p>
+          <p className="text-gray-700">{movie?.release_date}</p>
         </div>
 
-        <p className="text-base-light">{movie?.overview}</p>
+        <p className="text-gray-700 mb-2">{movie?.overview}</p>
 
-        <div className="flex gap-2">
-          <p className="text-base-bold">Rating:</p>
-          <p className="text-base-light">{movie?.vote_average}</p>
+        <div className="flex gap-2 mb-2">
+          <p className="font-semibold">Rating:</p>
+          <p className="text-gray-700">{movie?.vote_average}</p>
         </div>
 
         <div className="flex gap-2">
-          <p className="text-base-bold">Genres:</p>
-          <p className="text-base-light">
+          <p className="font-semibold">Genres:</p>
+          <p className="text-gray-700">
             {genres.map((genre) => genre.name).join(", ")}
           </p>
         </div>

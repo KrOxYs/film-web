@@ -15,6 +15,7 @@ interface FormData {
   username?: string; // Make it optional because we don't need it for login page
   email: string;
   password: string;
+  error: string;
 }
 
 const AuthForm = ({ type }: { type: "register" | "login" }) => {
@@ -54,12 +55,12 @@ const AuthForm = ({ type }: { type: "register" | "login" }) => {
       res = await signIn("credentials", {
         ...data,
         redirect: false,
-      })
+      });
 
       if (res && res.ok) {
         router.push("/");
       } else {
-        toast.error("Invalid credentials");
+        toast.error("Something went wrong");
       }
     }
   };
@@ -114,14 +115,14 @@ const AuthForm = ({ type }: { type: "register" | "login" }) => {
                 {...register("password", {
                   required: "Password is required",
                   validate: (value: string | undefined) => {
-                    if (
-                      !value ||
-                      value.length < 5 ||
-                      value.length > 20 ||
-                      !value.match(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/)
-                    ) {
-                      return "Password must be between 5 and 20 character with at least one special";
-                    }
+                    // if (
+                    //   !value ||
+                    //   value.length < 5 ||
+                    //   value.length > 20 ||
+                    //   !value.match(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/)
+                    // ) {
+                    //   return "Password must be between 5 and 20 character with at least one special";
+                    // }
                     return true;
                   },
                 })}

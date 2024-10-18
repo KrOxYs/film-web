@@ -1,16 +1,17 @@
-import { fetchTrending } from "@actions/movieData"
-import HeroCard from "./HeroCard"
+import { fetchTrending } from "@actions/movieData";
+import HeroCard from "./HeroCard";
+// Assuming you have a Movie type defined
 
-const Hero = async () => {
-  const trending = await fetchTrending()
-  const randonNumber = Math.floor(Math.random() * trending.length)
-  const trendingMovie = trending[randonNumber]
-
-  return (
-    <div>
-      <HeroCard trendingMovie={trendingMovie}/>
-    </div>
-  )
+interface HeroProps {
+  trendingMovies: any;
 }
 
-export default Hero
+const Hero = ({ trendingMovies }: HeroProps) => {
+  return (
+    <div>
+      <HeroCard trendingMovie={trendingMovies} />
+    </div>
+  );
+};
+
+export default Hero;

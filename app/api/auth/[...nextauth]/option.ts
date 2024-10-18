@@ -25,15 +25,18 @@ export const options: NextAuthOptions = {
           throw new Error("No user found");
         }
 
-        const isMatchedPassword = await compare(credentials?.password, user.password);
+        const isMatchedPassword = await compare(
+          credentials?.password,
+          user.password
+        );
 
         if (!isMatchedPassword) {
           throw new Error("Invalid password");
         }
 
-        return user
-      }
-    })
+        return user;
+      },
+    }),
   ],
-  secret: process.env.NEXTAUTH_SECRET
-}
+  secret: process.env.NEXTAUTH_SECRET,
+};
