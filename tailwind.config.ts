@@ -37,6 +37,13 @@ const config: Config = {
           fontWeight: "700",
         },
       ],
+      "heading5-bold": [
+        "40px",
+        {
+          lineHeight: "140%",
+          fontWeight: "700",
+        },
+      ],
       "body-bold": [
         "18px",
         {

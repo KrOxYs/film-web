@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import Loader from "./Loader";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import ToasterContext from "@context/ToasterContext";
 
 interface Props {
   movie: Movie;
@@ -57,8 +59,11 @@ const Modal: React.FC<Props> = ({ movie, closeModal }) => {
       if (data?.genres) {
         setGenres(data.genres);
       }
+
+      setLoading(false); // Set loading ke false setelah fetch selesai
     } catch (err) {
       console.log("Error fetching movie details", err);
+      setLoading(false);
     }
   };
 
@@ -67,22 +72,28 @@ const Modal: React.FC<Props> = ({ movie, closeModal }) => {
   }, [movie]);
 
   const getUser = async () => {
+    if (!session) return; // Jika tidak ada session, hentikan fungsi
+
     try {
-      const res = await fetch(`/api/user/${session?.user?.email}`);
+      const res = await fetch(`/api/user/${session.user?.email}`);
       const data = await res.json();
       setUser(data);
       setIsFavorite(data.favorites.includes(movie.id));
-      setLoading(false);
     } catch (err) {
       console.log("Error fetching user", err);
     }
   };
 
   useEffect(() => {
-    if (session) getUser();
+    if (session) getUser(); // Ambil data user hanya jika ada session
   }, [session]);
 
   const handleMyList = async () => {
+    if (!session) {
+      toast.error("Anda harus login untuk menggunakan fitur ini.");
+      return;
+    }
+
     try {
       const res = await fetch(`/api/user/${session?.user?.email}`, {
         method: "POST",
@@ -95,8 +106,16 @@ const Modal: React.FC<Props> = ({ movie, closeModal }) => {
       setUser(data);
       setIsFavorite(data.favorites.includes(movie.id));
       router.refresh();
+
+      // Menampilkan notifikasi berdasarkan status
+      if (data.favorites.includes(movie.id)) {
+        toast.success("Film berhasil ditambahkan ke favorit!");
+      } else {
+        toast.success("Film dihapus dari daftar favorit.");
+      }
     } catch (err) {
       console.log("Failed to handle my list", err);
+      toast.error("Gagal memperbarui daftar.");
     }
   };
 
@@ -105,7 +124,7 @@ const Modal: React.FC<Props> = ({ movie, closeModal }) => {
       <Loader />
     </div>
   ) : (
-    <div className="modal bg-white rounded-lg shadow-lg p-4 relative">
+    <div className="modal bg-white rounded-lg shadow-lg p-4 relative z-30">
       <button
         className="absolute top-4 right-4 text-white"
         onClick={closeModal}
@@ -128,16 +147,20 @@ const Modal: React.FC<Props> = ({ movie, closeModal }) => {
           </div>
           <div className="flex items-center gap-2">
             <p className="font-semibold">Add To List:</p>
-            {isFavorite ? (
-              <RemoveCircle
-                className="cursor-pointer text-pink-600"
-                onClick={handleMyList}
-              />
+            {session ? (
+              isFavorite ? (
+                <RemoveCircle
+                  className="cursor-pointer text-pink-600"
+                  onClick={handleMyList}
+                />
+              ) : (
+                <AddCircle
+                  className="cursor-pointer text-pink-600"
+                  onClick={handleMyList}
+                />
+              )
             ) : (
-              <AddCircle
-                className="cursor-pointer text-pink-600"
-                onClick={handleMyList}
-              />
+              <p className="text-gray-500">Login untuk menambahkan ke daftar</p>
             )}
           </div>
         </div>
@@ -161,6 +184,8 @@ const Modal: React.FC<Props> = ({ movie, closeModal }) => {
           </p>
         </div>
       </div>
+
+      <ToasterContext />
     </div>
   );
 };

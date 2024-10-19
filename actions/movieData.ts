@@ -23,6 +23,13 @@ export const fetchGenreMovies = async () => {
   return genres;
 };
 
+export const fetchPlayingMovies = async () => {
+  const data = await getApiResponse("/movie/now_playing");
+  const playingMovies = data.results;
+
+  return playingMovies;
+};
+
 export const fetchPopularMovies = async (page = 1) => {
   const data = await getApiResponse(
     `/movie/popular?language=en-US&page=${page}`
@@ -35,8 +42,9 @@ export const fetchPopularMovies = async (page = 1) => {
   return popularMovies;
 };
 
-export const searchMovies = async (query: string) => {
-  const data = await getApiResponse(`/search/movie?query=${query}`);
+export const searchMovies = async (query: string, page = 1) => {
+  const data = await getApiResponse(`/search/movie?query=${query}&page=${page}
+    `);
   const searchedMovies = data.results;
 
   return searchedMovies;

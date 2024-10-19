@@ -11,20 +11,17 @@ import Hero from "@components/Hero";
 import Loader from "@components/Loader";
 import AutoScrollingMovies from "@components/AutoScrollingMovies";
 import MovieCard from "@components/MovieCard";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 const Home: React.FC = () => {
-  const [visibleMovies, setVisibleMovies] = useState<Movie[]>([]);
+  const [visibleMovies, setVisibleMovies] = useState<Movie[]>([]); // State untuk film yang ditampilkan
   const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
-  const [loadingAll, setLoadingAll] = useState<boolean>(true);
-  const [trending, setTrending] = useState<Movie | undefined>();
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [loadingAll, setLoadingAll] = useState<boolean>(true); // Loading state
+  const [trending, setTrending] = useState<Movie | undefined>(); // State untuk menyimpan film trending
+  const [page, setPage] = useState(1); // State untuk halaman
+  const [loading, setLoading] = useState(false); // State untuk loading
   const [visiblePopularMovies, setVisiblePopularMovies] = useState<Movie[]>([]);
   const moviesPerPage = 6;
-  const totalPopularMoviesLimit = 30;
-  const [guestToken, setGuestToken] = useState<string | null>(null);
+  const totalPopularMoviesLimit = 30; // Batas total film populer yang akan diambil
 
   useEffect(() => {
     const fetchNowPlayingMovies = async () => {

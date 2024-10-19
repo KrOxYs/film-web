@@ -10,9 +10,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
+import { useState } from "react";
 
 interface FormData {
-  username?: string; // Make it optional because we don't need it for login page
+  username?: string;
   email: string;
   password: string;
   error: string;
@@ -20,6 +21,7 @@ interface FormData {
 
 const AuthForm = ({ type }: { type: "register" | "login" }) => {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -33,36 +35,54 @@ const AuthForm = ({ type }: { type: "register" | "login" }) => {
   });
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
+    setLoading(true);
     let res;
 
     if (type === "register") {
-      res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      try {
+        res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
 
-      if (res.ok) {
-        router.push("/login");
-      } else {
-        toast.error("Something went wrong");
+        if (res.ok) {
+          toast.success("Registrasi berhasil! Silakan login.");
+          router.push("/login");
+        } else {
+          toast.error("Terjadi kesalahan saat registrasi.");
+        }
+      } catch (err) {
+        toast.error("Terjadi kesalahan jaringan.");
       }
     }
 
     if (type === "login") {
-      res = await signIn("credentials", {
-        ...data,
-        redirect: false,
-      });
+      try {
+        res = await signIn("credentials", {
+          ...data,
+          redirect: false,
+        });
 
-      if (res && res.ok) {
-        router.push("/");
-      } else {
-        toast.error("Something went wrong");
+        if (res && res.ok) {
+          toast.success("Login berhasil!");
+          router.push("/");
+        } else {
+          toast.error("Email atau password salah.");
+        }
+      } catch (err) {
+        toast.error("Terjadi kesalahan saat login.");
       }
     }
+    setLoading(false);
+  };
+
+  // save to token to local storage namanya guest
+  const saveTokenGuest = (token: string) => {
+    localStorage.setItem("token", token);
+    router.push("/");
   };
 
   return (
@@ -77,10 +97,10 @@ const AuthForm = ({ type }: { type: "register" | "login" }) => {
                 <div className="input">
                   <input
                     {...register("username", {
-                      required: "Username is required",
+                      required: "Username wajib diisi",
                       validate: (value: string | undefined) => {
                         if (!value || value.length < 2) {
-                          return "Username must be more than 1 character";
+                          return "Username harus lebih dari 1 karakter";
                         }
                         return true;
                       },
@@ -100,7 +120,7 @@ const AuthForm = ({ type }: { type: "register" | "login" }) => {
             <div className="input">
               <input
                 {...register("email", {
-                  required: "Email is required",
+                  required: "Email wajib diisi",
                 })}
                 type="email"
                 placeholder="Email"
@@ -113,18 +133,7 @@ const AuthForm = ({ type }: { type: "register" | "login" }) => {
             <div className="input">
               <input
                 {...register("password", {
-                  required: "Password is required",
-                  validate: (value: string | undefined) => {
-                    // if (
-                    //   !value ||
-                    //   value.length < 5 ||
-                    //   value.length > 20 ||
-                    //   !value.match(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/)
-                    // ) {
-                    //   return "Password must be between 5 and 20 character with at least one special";
-                    // }
-                    return true;
-                  },
+                  required: "Password wajib diisi",
                 })}
                 type="password"
                 placeholder="Password"
@@ -136,20 +145,32 @@ const AuthForm = ({ type }: { type: "register" | "login" }) => {
               <p className="error">{errors.password.message}</p>
             )}
 
-            <button className="button" type="submit">
-              {type === "register" ? "Join Free" : "Let's Watch"}
+            <button className="button" type="submit" disabled={loading}>
+              {loading
+                ? "Tunggu..."
+                : type === "register"
+                ? "Daftar Gratis"
+                : "Masuk"}
             </button>
           </form>
 
           {type === "register" ? (
             <Link href="/login">
-              <p className="link">Already have an account? Log In Here</p>
+              <p className="link">Sudah punya akun? Masuk di sini</p>
             </Link>
           ) : (
             <Link href="/register">
-              <p className="link">Don't have an account? Register Here</p>
+              <p className="link">Belum punya akun? Daftar di sini</p>
             </Link>
           )}
+          <Link
+            href="/homepage"
+            onClick={() => {
+              saveTokenGuest("guest");
+            }}
+          >
+            <p className="link">Lanjutkan Sebagai Tamu </p>
+          </Link>
         </div>
       </div>
     </div>

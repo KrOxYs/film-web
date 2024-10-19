@@ -1,17 +1,19 @@
 "use client";
 
 import { Search } from "@mui/icons-material";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react"; // Import useSession
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const Navbar = () => {
+  const { data: session } = useSession(); // Mengambil session
   const router = useRouter();
+
+  console.log("session", session);
 
   const [search, setSearch] = useState<string>("");
   const [dropdownMenu, setDropdownMenu] = useState<boolean>(false);
-
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
 
   const handleScroll = () => {
@@ -30,7 +32,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     signOut({ callbackUrl: "/login" });
-  }
+  };
 
   return (
     <div className={`navbar ${isScrolled && "bg-black-1"}`}>
@@ -44,6 +46,9 @@ const Navbar = () => {
         </Link>
         <Link href="/my-list" className="nav-link">
           My List
+        </Link>
+        <Link href="/category" className="nav-link">
+          Category
         </Link>
       </div>
 
@@ -63,21 +68,64 @@ const Navbar = () => {
           </button>
         </div>
 
-        <img
-          src="/assets/profile_icon.jpg"
-          className="profile"
-          alt="profile"
-          onClick={() => setDropdownMenu(!dropdownMenu)}
-        />
+        {session ? (
+          <>
+            <img
+              src="/assets/profile_icon.jpg"
+              className="profile"
+              alt="profile"
+              onClick={() => setDropdownMenu(!dropdownMenu)}
+            />
 
-        {dropdownMenu && (
-          <div className="dropdown-menu">
-            <Link href="/">Home</Link>
-            <Link href="/my-list">My List</Link>
-            <a onClick={handleLogout}>Log Out</a>
-          </div>
+            {dropdownMenu && (
+              <div className="dropdown-menu">
+                <Link href="/">Home</Link>
+                <Link href="/my-list">My List</Link>
+                <a onClick={handleLogout}>Log Out</a>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className=" text-heading4-bold gap-3 flex text-white ">
+              <div className="max-sm:hidden">
+                <Link href="/login" className="hover:text-pink-600">
+                  Login
+                </Link>
+              </div>
+              <div className="max-sm:hidden">
+                <Link href="/register" className="hover:text-pink-600">
+                  Register
+                </Link>
+              </div>
+            </div>
+          </>
         )}
       </div>
+      {!session && (
+        <div className="md:hidden">
+          <img
+            src="https://www.svgrepo.com/show/312300/hamburger-menu.svg"
+            className=" text-blue-500 bg-white w-[] "
+            alt="hamburger"
+            onClick={() => setDropdownMenu(!dropdownMenu)}
+          />
+          {dropdownMenu && (
+            <div className="dropdown-menu">
+              <Link href="/">Home</Link>
+              <Link href="/my-list">My List</Link>
+              <div>
+                <Link href="/register" className="hover:text-pink-600">
+                  Register
+                </Link>
+                <Link href="/login" className="hover:text-pink-600">
+                  Login
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
